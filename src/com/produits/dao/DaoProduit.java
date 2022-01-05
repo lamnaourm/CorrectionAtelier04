@@ -29,20 +29,41 @@ public class DaoProduit implements IDao<Produit> {
 
 	@Override
 	public boolean save(Produit obj) {
-		// TODO Auto-generated method stub
-		return false;
+		try {
+			Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+			Transaction t = s.beginTransaction();
+			s.save(obj);
+			t.commit();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean update(Produit obj) {
-		// TODO Auto-generated method stub
-		return false;
+		try {
+			Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+			Transaction t = s.beginTransaction();
+			s.update(obj);
+			t.commit();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	@Override
 	public boolean delete(Produit obj) {
-		// TODO Auto-generated method stub
-		return false;
+		try {
+			Session s = HibernateUtils.getSessionFactory().getCurrentSession();
+			Transaction t = s.beginTransaction();
+			s.delete(obj);
+			t.commit();
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 }

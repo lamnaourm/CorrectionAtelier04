@@ -30,11 +30,9 @@ import java.awt.event.ActionEvent;
 public class Main extends JFrame {
 
 	enum Mode {
-		normal,
-		add, 
-		update
+		normal, add, update
 	}
-	
+
 	private JPanel contentPane;
 	private JTextField txtCode;
 	private JTextField txtNom;
@@ -48,11 +46,11 @@ public class Main extends JFrame {
 	private JButton btnPrevious;
 	private JButton btnNext;
 	private JButton btnLast;
-	
+
 	IMetier<Produit> metier = new MetierProduit();
 	List<Produit> produits;
 	int position;
-	Mode choix=Mode.normal;
+	Mode choix = Mode.normal;
 
 	/**
 	 * Launch the application.
@@ -144,40 +142,64 @@ public class Main extends JFrame {
 		btnAjouter = new JButton("Ajouter");
 		btnAjouter.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				switch(choix) {
-					case normal:
-						activeDesactiveControls(true);
-						txtNom.setText("");
-						txtPrixAchat.setText("");
-						txtPrixVente.setText("");
-						txtNom.requestFocus();
-						btnAjouter.setText("Enregistrer");
-						btnModifier.setText("Annuler");
-						choix = Mode.add;
-						break;
-					case add:
-						Produit p = new Produit();
-						p.setNom(txtNom.getText());
-						p.setPrixAchat(Double.parseDouble(txtPrixAchat.getText()));
-						p.setPrixVente(Double.parseDouble(txtPrixVente.getText()));
-						
-						if(metier.save(p))
-							JOptionPane.showMessageDialog(null, "Produit ajoute avec succes");
-						else 
-							JOptionPane.showMessageDialog(null, "Echec d'ajout de Produit");
-						break;
-					case update:
-						p = new Produit();
-						p.setId(Integer.parseInt(txtCode.getText()));
-						p.setNom(txtNom.getText());
-						p.setPrixAchat(Double.parseDouble(txtPrixAchat.getText()));
-						p.setPrixVente(Double.parseDouble(txtPrixVente.getText()));
-						
-						if(metier.update(p))
-							JOptionPane.showMessageDialog(null, "Produit ajoute avec succes");
-						else 
-							JOptionPane.showMessageDialog(null, "Echec d'ajout de Produit");
-						break;
+				switch (choix) {
+				case normal:
+					activeDesactiveControls(true);
+					txtNom.setText("");
+					txtPrixAchat.setText("");
+					txtPrixVente.setText("");
+					txtNom.requestFocus();
+					btnAjouter.setText("Enregistrer");
+					btnModifier.setText("Annuler");
+					choix = Mode.add;
+					break;
+				case add:
+					Produit p = new Produit();
+					p.setNom(txtNom.getText());
+					p.setPrixAchat(Double.parseDouble(txtPrixAchat.getText()));
+					p.setPrixVente(Double.parseDouble(txtPrixVente.getText()));
+
+					if (metier.save(p))
+						JOptionPane.showMessageDialog(null, "Produit ajoute avec succes");
+					else
+						JOptionPane.showMessageDialog(null, "Echec d'ajout de Produit");
+
+					produits = metier.getAll();
+					position = produits.size() - 1;
+					afficheProduit();
+					choix = Mode.normal;
+					btnAjouter.setText("Ajouter");
+					btnModifier.setText("Modifier");
+					txtNom.setEditable(false);
+					txtPrixAchat.setEditable(false);
+					txtPrixVente.setEditable(false);
+					btnSupprimer.setEnabled(true);
+					btnFermer.setEnabled(true);
+					break;
+				case update:
+					p = new Produit();
+					p.setId(Integer.parseInt(txtCode.getText()));
+					p.setNom(txtNom.getText());
+					p.setPrixAchat(Double.parseDouble(txtPrixAchat.getText()));
+					p.setPrixVente(Double.parseDouble(txtPrixVente.getText()));
+
+					if (metier.update(p))
+						JOptionPane.showMessageDialog(null, "Produit modifie avec succes");
+					else
+						JOptionPane.showMessageDialog(null, "Echec de modification de Produit");
+
+					produits = metier.getAll();
+					afficheProduit();
+					choix = Mode.normal;
+					btnAjouter.setText("Ajouter");
+					btnModifier.setText("Modifier");
+					txtNom.setEditable(false);
+					txtPrixAchat.setEditable(false);
+					txtPrixVente.setEditable(false);
+					btnSupprimer.setEnabled(true);
+					btnFermer.setEnabled(true);
+
+					break;
 				}
 			}
 		});
@@ -189,11 +211,25 @@ public class Main extends JFrame {
 		btnModifier = new JButton("Modifier");
 		btnModifier.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				activeDesactiveControls(true);
-				txtNom.requestFocus();
-				btnAjouter.setText("Enregistrer");
-				btnModifier.setText("Annuler");
-				choix = Mode.update;
+
+				if (choix == Mode.normal) {
+					activeDesactiveControls(true);
+					txtNom.requestFocus();
+					btnAjouter.setText("Enregistrer");
+					btnModifier.setText("Annuler");
+					choix = Mode.update;
+				} else {
+					produits = metier.getAll();
+					afficheProduit();
+					choix = Mode.normal;
+					btnAjouter.setText("Ajouter");
+					btnModifier.setText("Modifier");
+					txtNom.setEditable(false);
+					txtPrixAchat.setEditable(false);
+					txtPrixVente.setEditable(false);
+					btnSupprimer.setEnabled(true);
+					btnFermer.setEnabled(true);
+				}
 			}
 		});
 		btnModifier.setName("modifier");
@@ -202,6 +238,30 @@ public class Main extends JFrame {
 		contentPane.add(btnModifier);
 
 		btnSupprimer = new JButton("Supprimer");
+		btnSupprimer.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+
+				int ch = JOptionPane.showConfirmDialog(null, "Voulez-vous supprimer ce produit ?",
+						"Suppression produit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+				if (ch == JOptionPane.YES_OPTION) {
+					Produit p = new Produit();
+					p.setId(Integer.parseInt(txtCode.getText()));
+					p.setNom(txtNom.getText());
+					p.setPrixAchat(Double.parseDouble(txtPrixAchat.getText()));
+					p.setPrixVente(Double.parseDouble(txtPrixVente.getText()));
+
+					if (metier.delete(p))
+						JOptionPane.showMessageDialog(null, "Produit supprime avec succes");
+					else
+						JOptionPane.showMessageDialog(null, "Echec de suppression de Produit");
+
+					produits = metier.getAll();
+					position = 0;
+					afficheProduit();
+				}
+			}
+		});
 		btnSupprimer.setName("supprimer");
 		btnSupprimer.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnSupprimer.setBounds(377, 159, 128, 32);
@@ -211,6 +271,9 @@ public class Main extends JFrame {
 		btnFermer.setName("fermer");
 		btnFermer.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnFermer.setBounds(377, 202, 128, 32);
+		btnFermer.addActionListener((e) -> {
+			this.dispose();
+		});
 		contentPane.add(btnFermer);
 
 		btnFirst = new JButton("<<");
@@ -236,32 +299,39 @@ public class Main extends JFrame {
 		btnLast.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnLast.setBounds(252, 210, 70, 32);
 		contentPane.add(btnLast);
-		
-		
+
 		produits = metier.getAll();
-		if(produits.size()==0) {
+		if (produits.size() == 0) {
 			btnLast.setEnabled(false);
 			btnNext.setEnabled(false);
 			btnFirst.setEnabled(false);
-			btnPrevious.setEnabled(false);			
-		}else {
+			btnPrevious.setEnabled(false);
+		} else {
 			position = 0;
 			afficheProduit();
 		}
-		
+
 		ActionListener e = (event) -> {
-			JButton b = (JButton)event.getSource();
-			
+			JButton b = (JButton) event.getSource();
+
 			switch (b.getText()) {
-				case "<": position--; break;
-				case "<<": position=0; break;
-				case ">": position++; break;
-				case ">>": position=produits.size()-1; break;
+			case "<":
+				position--;
+				break;
+			case "<<":
+				position = 0;
+				break;
+			case ">":
+				position++;
+				break;
+			case ">>":
+				position = produits.size() - 1;
+				break;
 			}
-			
+
 			afficheProduit();
 		};
-		
+
 		btnFirst.addActionListener(e);
 		btnLast.addActionListener(e);
 		btnNext.addActionListener(e);
@@ -269,18 +339,18 @@ public class Main extends JFrame {
 	}
 
 	void afficheProduit() {
-		if(position==0) {
+		if (position == 0) {
 			btnFirst.setEnabled(false);
 			btnPrevious.setEnabled(false);
-		}else {
+		} else {
 			btnFirst.setEnabled(true);
 			btnPrevious.setEnabled(true);
 		}
-		
-		if(position==produits.size()-1) {
+
+		if (position == produits.size() - 1) {
 			btnLast.setEnabled(false);
 			btnNext.setEnabled(false);
-		}else {
+		} else {
 			btnLast.setEnabled(true);
 			btnNext.setEnabled(true);
 		}
@@ -289,7 +359,7 @@ public class Main extends JFrame {
 		txtPrixAchat.setText(String.valueOf(produits.get(position).getPrixAchat()));
 		txtPrixVente.setText(String.valueOf(produits.get(position).getPrixVente()));
 	}
-	
+
 	public void activeDesactiveControls(boolean etat) {
 		txtNom.setEditable(etat);
 		txtPrixAchat.setEditable(etat);
@@ -301,5 +371,5 @@ public class Main extends JFrame {
 		btnSupprimer.setEnabled(!etat);
 		btnFermer.setEnabled(!etat);
 	}
-	
+
 }
